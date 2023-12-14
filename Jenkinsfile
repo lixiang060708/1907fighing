@@ -1,4 +1,10 @@
 pipeline {
+    agent {
+        node {
+            label "any"                             // 指定节点的标签与名称
+            // customWorkspace "${workspace}"          // 指定运行工作目录（可选）
+        }
+    }
     parameters {
         booleanParam(name: "NEW_FUNCTION_NAME",defaultValue: true, description: "")
         choice(name: "env", choices: ['dev', 'uat', 'prod'], description: "")
@@ -8,7 +14,6 @@ pipeline {
     stages {
         stage("ENV") {
             steps {
-                
                 wrap([$class: "BuildUser"]) {
                     script {
                         env["BUILD_USER_EMAIL"] = "${env.BUILD_USER_EMAIL}"
@@ -67,16 +72,16 @@ pipeline {
             }
         }
  
-        stage("credential") {
-            steps {
-                withCredentials([file(credentialsId: "ACK_SA", variable: "ACK"), usernamePassword(credentialsId: "ACK-1", passwordVariable: "ACK-1", usernameVariable: "ACK-1")]) {
-                    sh '''
-                    set +x
-                    source ${ACK_SA}
-                    '''
-                }
-            }
-        }
+        // stage("credential") {
+        //     steps {
+        //         withCredentials([file(credentialsId: "ACK_SA", variable: "ACK"), usernamePassword(credentialsId: "ACK-1", passwordVariable: "ACK-1", usernameVariable: "ACK-1")]) {
+        //             sh '''
+        //             set +x
+        //             source ${ACK_SA}
+        //             '''
+        //         }
+        //     }
+        // }
  
         stage("allof") {
             when {
@@ -87,11 +92,22 @@ pipeline {
             steps {
                 sh """
                 echo "success"
-                sh -ex test.sh 123.sh
                 """
             }
         }
  
     }
-    post {}
+    post {
+        always {                                    //总是执行脚本
+            script{
+                println("always")
+                echo "clean up the job workspace"
+                cleanWs()                           // 清楚工作空间
+            }
+        }
+        success {                                   //成功后执行
+            mail bcc: "", cc: "", body: "<b>Dear Team,<b><br>The below Jenkins job was failed<br>${BUILD_URL}",
+                charset: "UTF-8", mimeType: 'text/html', to: "${email_to}", subject: "test ${BUILD_NUMBER} ${GIT_BRANCH}"
+        }
+    }
 }
