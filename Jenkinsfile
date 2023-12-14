@@ -2,7 +2,7 @@ pipeline {
     parameters {
         booleanParam(name: "NEW_FUNCTION_NAME",defaultValue: true, description: "")
         choice(name: "env", choices: ['dev', 'uat', 'prod'], description: "")
-        string(name: "jobtest", defaultValue: "test", description: "")
+        string(name: "branch", defaultValue: "master", description: "")
     }
  
     stages {
