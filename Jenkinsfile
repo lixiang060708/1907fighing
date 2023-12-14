@@ -170,7 +170,16 @@ pipeline {
                 sh "kubectl apply -f k8s-deployment.yml --namespace=${K8S_NAMESPACE}"
             }
         }
- 
+
+        // stage('Deploy to Kubernetes') {
+        //     steps {
+        //         // 部署到 Kubernetes
+        //         withKubeConfig([credentialsId: 'your-kubeconfig-cred', serverUrl: 'your-kubernetes-server-url']) {
+        //             sh 'kubectl apply -f your-deployment-file.yaml'
+        //         }
+        //     }
+        // }
+        
     }
     post {
         always {                                    //总是执行脚本
